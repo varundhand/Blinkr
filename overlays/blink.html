@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blink Reminder</title>
+    <style>
+      /* ====== GENERAL BODY STYLES ====== */
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: transparent;
+        font-family: "Poppins", sans-serif;
+        overflow: hidden;
+      }
+
+      /* ====== DIM BACKGROUND ====== */
+      .overlay-dim {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 20, 40, 0);
+        animation: dimFadeIn 1.5s forwards ease-in-out;
+      }
+
+      @keyframes dimFadeIn {
+        from {
+          background: rgba(20, 20, 40, 0);
+        }
+        to {
+          background: rgba(20, 20, 40, 0.45);
+        }
+      }
+
+      /* ====== GLASS BOX ====== */
+      .blink-box {
+        position: relative;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 30px;
+        box-shadow: 0 10px 40px rgba(60, 70, 160, 0.35);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        text-align: center;
+        padding: 70px 100px;
+        opacity: 0;
+        transform: scale(0.9);
+        animation: fadeInBox 0.8s ease-out 1s forwards;
+      }
+
+      @keyframes fadeInBox {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* ====== GRADIENT GLOW ====== */
+      .blink-box::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #8a2be255, #4b6cb755);
+        filter: blur(25px);
+        z-index: -1;
+        opacity: 0.5;
+        animation: glowPulse 3.5s ease-in-out infinite alternate;
+      }
+
+      @keyframes glowPulse {
+        from {
+          opacity: 0.4;
+        }
+        to {
+          opacity: 0.7;
+        }
+      }
+
+      /* ====== IMAGE ====== */
+      .blink-box img {
+        width: 220px;
+        border-radius: 20px;
+        animation: floaty 3.5s ease-in-out infinite;
+      }
+
+      @keyframes floaty {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* ====== TEXT ====== */
+      .blink-box h3 {
+        margin-top: 35px;
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 25px rgba(161, 140, 209, 0.4);
+        letter-spacing: 0.8px;
+        opacity: 0;
+        animation: fadeInText 1.3s ease-in-out 1.2s forwards;
+      }
+
+      @keyframes fadeInText {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ====== FADE OUT ====== */
+      @keyframes fadeOutAll {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+
+      .fade-out {
+        animation: fadeOutAll 1s forwards ease-in;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overlay-dim"></div>
+
+    <div class="blink-box" id="blinkBox">
+      <img src="../src/assets/blinking.gif" alt="Blink Reminder" />
+      <h3 id="blinkMessage"></h3>
+    </div>
+
+    <audio id="notify-sound" src="../src/assets/sounds/positive-notification.wav"></audio>
+
+    <script>
+      // Set a random blink message each time the overlay loads
+      const blinkMessages = [
+        "Time to rest your eyes",
+        "Give your eyes a quick break",
+        "A gentle blink reminder",
+        "Take a moment for your eyes",
+        "Refresh your vision",
+      ];
+
+      const messageEl = document.getElementById("blinkMessage");
+      if (messageEl) {
+        const randomIdx = Math.floor(Math.random() * blinkMessages.length);
+        messageEl.textContent = blinkMessages[randomIdx];
+      }
+
+      window.onload = () => {
+        const sound = document.getElementById("notify-sound");
+        sound.volume = 0.5;
+        setTimeout(() => {
+          sound.play().catch(() => console.log("Autoplay blocked"));
+        }, 1200);
+      };
+
+      // Fade out before close
+      setTimeout(() => {
+        document.body.classList.add("fade-out");
+        setTimeout(() => window.close(), 1000);
+      }, 7000);
+    </script>
+  </body>
+</html>

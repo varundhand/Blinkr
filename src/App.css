@@ -1,0 +1,354 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* App.css - glassmorphism UI, sidebar layout, no scrollbars */
+
+/* reset for the root app host */
+:root, html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* ensure no scrollbars appear */
+html, body {
+  overflow: hidden;
+}
+
+/* main layout */
+/* Base Reset */
+:root, html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  overflow: hidden;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  background: radial-gradient(circle at 30% 20%, #0c1018, #0a0c12 90%);
+  color: #e7eef8;
+}
+
+/* Remove scrollbar entirely */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- LAYOUT ---------- */
+
+.app-root {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100vh;
+  gap: 28px;
+  padding: 28px;
+}
+
+/* Sidebar (left fixed glass panel) */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* App title section */
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.app-logo {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.app-title .name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.app-title .sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- NAV ---------- */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  transition: all 200ms ease;
+  text-align: left;
+  font-weight: 600;
+}
+
+.nav-item .nav-emoji {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(6px);
+}
+
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(120, 150, 255, 0.4);
+  border-left: 3px solid rgba(110, 140, 255, 0.8);
+}
+
+/* ---------- FOOTER ---------- */
+
+.sidebar-footer {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- MAIN CONTENT ---------- */
+
+.content-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px3;
+}
+
+.panel {
+  width: 100%;
+  max-width: 800px;
+  border-radius: 18px;
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 12px 60px rgba(2, 6, 23, 0.7);
+}
+
+/* ---------- HEADINGS ---------- */
+
+.panel-header {
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.panel-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.panel-sub {
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+/* ---------- FORM ---------- */
+
+.panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.field-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.field-input {
+  width: 240px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.field-input:focus {
+  border-color: rgba(120, 150, 255, 0.6);
+  box-shadow: 0 0 10px rgba(120, 150, 255, 0.2);
+}
+
+/* ---------- BUTTONS ---------- */
+
+.buttons-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn.primary {
+  background: linear-gradient(90deg, #5b8bff, #7b66ff);
+  color: white;
+  box-shadow: 0 8px 30px rgba(91, 139, 255, 0.2);
+}
+
+.btn.warn {
+  background: linear-gradient(90deg, #ff7b7b, #ffb36b);
+  color: white;
+  box-shadow: 0 8px 30px rgba(255, 180, 130, 0.2);
+}
+
+.btn.subtle {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- NOTE ---------- */
+
+.note {
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+}
+
+/* ---------- ABOUT PAGE ---------- */
+
+.about-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+.about-meta {
+  display: flex;
+  gap: 30px;
+  margin-top: 14px;
+}
+
+.about-meta strong {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 6px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+/* @media (max-width: 880px) {
+  .app-root {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-width: auto;
+    height: auto;
+  }
+
+  .content-area {
+    padding-top: 10px;
+  }
+
+  .panel {
+    width: 100%;
+    padding: 20px;
+  }
+} */
