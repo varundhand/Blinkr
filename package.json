@@ -1,34 +1,94 @@
 {
-  "name": "Blinkr",
-  "version": "0.0.1",
+  "name": "blinkr",
+  "version": "0.1.0",
+  "description": "Break and blink reminder app for eye wellness",
   "private": true,
   "type": "module",
   "main": "electron/main.js",
-  "appId": "com.varundhand.blinkr",
+  "author": "Varun Dhand",
   "scripts": {
     "dev": "concurrently \"vite\" \"npm run electron-dev\"",
     "electron-dev": "electron .",
-    "build": "tsc -b && vite build && electron-builder",
+    "build": "tsc -b && vite build",
+    "electron:build": "rm -rf dist dist-electron && npm run build && electron-builder",
+    "electron:build:mac": "rm -rf dist dist-electron && npm run build && electron-builder --mac",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "build": {
     "appId": "com.varundhand.blinkr",
     "productName": "Blinkr",
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "icon": "public/icon.icns"
+    "copyright": "Copyright © 2025 Varun Dhand",
+    "directories": {
+      "output": "dist-electron",
+      "buildResources": "build"
     },
     "files": [
-      "dist/",
-      "electron/"
+      "dist/**/*",
+      "electron/**/*",
+      "overlays/**/*",
+      "package.json"
     ],
-    "directories": {
-      "buildResources": "assets"
+    "extraResources": [
+      {
+        "from": "src/assets",
+        "to": "assets",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "src/assets/app-icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "icon": "src/assets/app-icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "src/assets/app-icon.png",
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 400
+      }
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   },
   "dependencies": {

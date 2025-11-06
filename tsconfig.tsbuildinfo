@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/blinkoverlay.tsx","./src/components/breakoverlay.tsx","./src/components/settings.tsx","./src/components/ui/globe.tsx","./src/lib/utils.ts","./src/types/electron.d.ts"],"version":"5.9.3"}

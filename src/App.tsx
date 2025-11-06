@@ -116,7 +116,7 @@ export default function App() {
                 <button
                   className="btn subtle"
                   onClick={() => {
-                    setBreakInterval(20);
+                    setBreakInterval(30);
                     setBlinkInterval(20);
                   }}
                 >

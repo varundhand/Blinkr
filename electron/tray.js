@@ -32,7 +32,7 @@ export function createTray(mainWindow) {
     stopScheduler();
     startScheduler({ breakInterval, blinkInterval });
 
-    // 🔥 Notify renderer about the change
+    // Notify renderer about the change
     mainWindow.webContents.send("scheduler-state-changed", {
       running: true,
       breakInterval,
@@ -56,7 +56,7 @@ export function createTray(mainWindow) {
     // Update tooltip
     tray.setToolTip(`Next break: ${timeLeft}`);
 
-    // 🔥 Rebuild menu every second so it's always fresh
+    // Rebuild menu every second so it's always fresh
     const contextMenu = Menu.buildFromTemplate([
       { label: `Next break: ${timeLeft}`, enabled: false },
       { type: "separator" },
@@ -128,7 +128,7 @@ export function createTray(mainWindow) {
   // Initial update
   updateMenuAndTooltip();
 
-  // 🔥 Update BOTH menu and tooltip every second
+  // Update BOTH menu and tooltip every second
   trayInterval = setInterval(updateMenuAndTooltip, 1000);
 }
 

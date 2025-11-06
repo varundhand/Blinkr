@@ -30,7 +30,7 @@
           background: rgba(20, 20, 40, 0);
         }
         to {
-          background: rgba(20, 20, 40, 0.45);
+          background: rgba(20, 20, 40, 0.7);
         }
       }
 
@@ -38,10 +38,10 @@
       .blink-box {
         position: relative;
         z-index: 10;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(20, 20, 30, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 30px;
-        box-shadow: 0 10px 40px rgba(60, 70, 160, 0.35);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(25px);
         -webkit-backdrop-filter: blur(25px);
         text-align: center;
@@ -145,13 +145,20 @@
     <div class="overlay-dim"></div>
 
     <div class="blink-box" id="blinkBox">
-      <img src="../src/assets/blinking.gif" alt="Blink Reminder" />
+      <img id="blinkGif" alt="Blink Reminder" />
       <h3 id="blinkMessage"></h3>
     </div>
 
-    <audio id="notify-sound" src="../src/assets/sounds/positive-notification.wav"></audio>
+    <audio id="notify-sound"></audio>
 
     <script>
+      // 🔥 Get asset paths from URL query parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // Set asset sources from query parameters
+      document.getElementById('blinkGif').src = urlParams.get('blinkingGif') || '';
+      document.getElementById('notify-sound').src = urlParams.get('blinkSound') || '';
+
       // Set a random blink message each time the overlay loads
       const blinkMessages = [
         "Time to rest your eyes",
@@ -179,7 +186,7 @@
       setTimeout(() => {
         document.body.classList.add("fade-out");
         setTimeout(() => window.close(), 1000);
-      }, 7000);
+      }, 8500);
     </script>
   </body>
 </html>

@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopScheduler: () => ipcRenderer.send('stop-scheduler'),
   closeOverlay: () => ipcRenderer.send('close-overlay'),
   
-  // 🔥 Listen for state changes from main process
+  // Listen for state changes from main process
   onSchedulerStateChanged: (callback) => {
     ipcRenderer.on('scheduler-state-changed', (event, data) => callback(data));
   },

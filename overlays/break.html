@@ -15,7 +15,7 @@
         background: transparent;
         font-family: "Poppins", sans-serif;
         overflow: hidden;
-        cursor: none; /* hide default cursor */
+        cursor: none;
       }
 
       /* ====== BACKGROUND DIM ====== */
@@ -35,7 +35,7 @@
           background: rgba(10, 10, 10, 0);
         }
         to {
-          background: rgba(10, 10, 10, 0.55);
+          background: rgba(10, 10, 10, 0.75);
         }
       }
 
@@ -43,10 +43,10 @@
       .break-box {
         position: relative;
         z-index: 10;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.4),
-          inset 0 0 40px rgba(255, 255, 255, 0.05);
+        background: rgba(20, 20, 30, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6),
+          inset 0 0 40px rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(25px);
         border-radius: 30px;
         text-align: center;
@@ -107,9 +107,9 @@
       /* ====== GIF & TIMER ====== */
       .break-gif {
         width: 280px;
-        border-radius: 25px;
+        /* border-radius: 25px; */
         animation: floaty 4s ease-in-out infinite;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); */
       }
 
       @keyframes floaty {
@@ -177,37 +177,63 @@
     <div class="break-box">
       <div class="current-time" id="currentTime"></div>
       <h2 class="title">Brief Intermission</h2>
-      <p class="subtitle">Focus on a distant point until it’s time to resume</p>
-      <img src="../src/assets/break2.gif" class="break-gif" alt="Break Time" />
+      <p class="subtitle">Focus on a distant point until it's time to resume</p>
+      <img id="breakGif" class="break-gif" alt="Break Time" />
       <div class="timer" id="timer">20</div>
       <button class="skip-btn" id="skipBtn">Skip Break</button>
     </div>
 
-    <!-- 🎵 Sounds -->
-    <audio id="startSound" src="../src/assets/sounds/break-start.wav"></audio>
-    <audio id="endSound" src="../src/assets/sounds/break-end.wav"></audio>
-
-    <!-- 🖱️ Custom Cursor -->
-    <img src="../src/assets/cursors/cursor-main.gif" class="custom-cursor" id="customCursor" />
+    <audio id="startSound"></audio>
+    <audio id="endSound"></audio>
+    <img class="custom-cursor" id="customCursor" />
+    
     <script>
+      // 🔥 Get asset paths from URL query parameters
+      const urlParams = new URLSearchParams(window.location.search);
+    
+      // Set all asset sources from query parameters
+      const startSound = document.getElementById("startSound");
+      const endSound = document.getElementById("endSound");
+      const breakGif = document.getElementById("breakGif");
       const cursor = document.getElementById("customCursor");
       const skipBtn = document.getElementById("skipBtn");
-
+    
+      breakGif.src = urlParams.get("breakGif") || "";
+      cursor.src = urlParams.get("cursorMain") || "";
+      startSound.src = urlParams.get("breakStart") || "";
+      endSound.src = urlParams.get("breakEnd") || "";
+    
+      // Preload and ensure sounds can play instantly
+      startSound.load();
+      endSound.load();
+    
       // Cursor follow logic
       document.addEventListener("mousemove", (e) => {
         cursor.style.top = e.clientY + "px";
         cursor.style.left = e.clientX + "px";
       });
-
+    
       // Change cursor on hover
       skipBtn.addEventListener("mouseenter", () => {
-        cursor.src = "../src/assets/cursors/cursor-hover.gif";
+        cursor.src = urlParams.get("cursorHover") || "";
       });
       skipBtn.addEventListener("mouseleave", () => {
-        cursor.src = "../src/assets/cursors/cursor-main.gif";
+        cursor.src = urlParams.get("cursorMain") || "";
       });
-
-      // Timer logic
+    
+      // Play start sound immediately once DOM is ready
+      window.addEventListener("DOMContentLoaded", () => {
+        const playStart = () => {
+          startSound.currentTime = 0;
+          startSound.play().catch(() => {
+            // If autoplay blocked, wait until user interacts
+            document.body.addEventListener("click", () => startSound.play(), { once: true });
+          });
+        };
+        playStart();
+      });
+    
+      // Timer logic (20 seconds countdown)
       const timerElement = document.getElementById("timer");
       let timeLeft = 20;
       const countdown = setInterval(() => {
@@ -215,38 +241,41 @@
         timerElement.textContent = timeLeft;
         if (timeLeft <= 0) {
           clearInterval(countdown);
-          document.getElementById("endSound").play();
-          setTimeout(() => {
-            if (window.electronAPI && window.electronAPI.closeOverlay) {
-              window.electronAPI.closeOverlay();
-            } else {
-              window.close(); // fallback
-            }
-          }, 1000);
+          // 🕓 Wait for fade + play exit sound fully before closing
+          endSound.currentTime = 0;
+          endSound.play();
+    
+          endSound.addEventListener(
+            "ended",
+            () => {
+              if (window.electronAPI && window.electronAPI.closeOverlay) {
+                window.electronAPI.closeOverlay();
+              } else {
+                window.close();
+              }
+            },
+            { once: true }
+          );
         }
       }, 1000);
-
-      // Play start sound after fade-in
-      setTimeout(() => {
-        document.getElementById("startSound").play();
-      }, 2000);
-
-      // Skip button
+    
+      // Skip button logic
       skipBtn.addEventListener("click", () => {
         if (window.electronAPI && window.electronAPI.closeOverlay) {
           console.log("clicked skip");
-          
           window.electronAPI.closeOverlay();
         } else {
-          window.close(); // fallback
+          window.close();
         }
       });
-
-
-      // Current time
+    
+      // Display current time
       const timeEl = document.getElementById("currentTime");
       const now = new Date();
-      timeEl.textContent = "Current time is " + now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      timeEl.textContent =
+        "Current time is " +
+        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     </script>
+    
   </body>
 </html>

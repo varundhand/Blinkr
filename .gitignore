@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-electron/
 dist-ssr
 *.local
 
@@ -22,3 +23,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*

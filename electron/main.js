@@ -5,19 +5,17 @@ import fs from "fs";
 import { createTray, destroyTray } from "./tray.js";
 import { startScheduler, stopScheduler, closeAllOverlays } from "./scheduler.js";
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow;
+let isFirstLaunch = true; // Track first open
 
-// Resolve app icon path for dev and production (macOS PNG/ICNS)
+// ---------- ICON PATH RESOLUTION ----------
 function resolveIconPath() {
   if (!app.isPackaged) {
-    // Dev: use source asset
     return path.resolve(__dirname, "../src/assets/app-icon.png");
   }
-  // Packaged: prefer assets inside resources, fallback to ICNS if present
   const candidates = [
     path.join(process.resourcesPath, "assets", "app-icon.png"),
     path.join(process.resourcesPath, "app-icon.png"),
@@ -31,24 +29,41 @@ function resolveIconPath() {
   return undefined;
 }
 
-// ---------- MAIN WINDOW ----------
+// ---------- CREATE MAIN WINDOW ----------
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 750,
     height: 750,
     icon: resolveIconPath(),
-    show: false,
+    show: false, // initially hidden
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
     },
   });
 
-  mainWindow.loadURL("http://localhost:5173");
+  if (app.isPackaged) {
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+  } else {
+    mainWindow.loadURL("http://localhost:5173");
+  }
 
-  mainWindow.on("close", (event) => {
-    event.preventDefault();
-    mainWindow.hide();
+  mainWindow.once("ready-to-show", () => {
+    if (isFirstLaunch) {
+      mainWindow.show();
+      isFirstLaunch = false;
+    }
   });
+
+  // Instead of quitting, hide the window when closed
+  mainWindow.on('close', (event) => {
+    if (process.platform === 'darwin') {
+      event.preventDefault();
+      mainWindow.hide();
+    } else {
+      app.quit();
+    }
+  });
+  
 
   return mainWindow;
 }
@@ -57,39 +72,58 @@ function createMainWindow() {
 app.whenReady().then(() => {
   const mainWindow = createMainWindow();
   const iconPath = resolveIconPath();
+
   if (process.platform === "darwin" && iconPath) {
-    app.dock.setIcon(iconPath); // macOS dock icon
+    app.dock.setIcon(iconPath);
   }
 
   createTray(mainWindow);
 
+  // Optional: hide Dock icon for macOS (true background app)
+  // Uncomment below if you want it to only live in tray
+  // if (process.platform === "darwin") app.dock.hide();
+
+  // We need to listen for the activate event on macOS in your main.js (or background.js) and recreate the window if there’s none currently open.
+  app.on('activate', () => {
+    // On macOS, recreate a window when the dock icon is clicked
+    // and there are no other windows open
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createMainWindow(); // replace this with your actual window creation function
+    } else {
+      const win = BrowserWindow.getAllWindows()[0];
+      if (win) {
+        win.show();
+      }
+    }
+  });
+  
+
+  // ---- IPC: Scheduler start/stop logic ----
   ipcMain.on("start-scheduler", (event, data) => {
     stopScheduler();
     closeAllOverlays();
+
     const breakInterval = data.breakInterval || 30;
     const blinkInterval = data.blinkInterval || 20;
+
     startScheduler({ breakInterval, blinkInterval });
   });
 
-  // FIX: Actually call stopScheduler when stop button is clicked
   ipcMain.on("stop-scheduler", () => {
     stopScheduler();
     closeAllOverlays();
 
-    // Notify renderer that scheduler stopped
-  mainWindow.webContents.send("scheduler-state-changed", {
-    running: false,
-    breakInterval: 30, // Keep current values
-    blinkInterval: 20,
-  });
+    mainWindow.webContents.send("scheduler-state-changed", {
+      running: false,
+      breakInterval: 30,
+      blinkInterval: 20,
+    });
   });
 
-  // FIX: handle close-overlay from renderer (skip button)
   ipcMain.on("close-overlay", () => {
     closeAllOverlays();
   });
 });
-
 
 // ---------- CLEANUP ----------
 app.on("before-quit", () => {
