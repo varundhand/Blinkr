@@ -1,6 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { Tray, Menu, app, BrowserWindow } from "electron";
+import fs from "fs";
+import { Tray, Menu, app, nativeImage } from "electron";
 import { getNextBreakTime, startScheduler, stopScheduler } from "./scheduler.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -8,14 +9,68 @@ const __dirname = path.dirname(__filename);
 
 let tray = null;
 let trayInterval = null;
-let currentBreakInterval = 30; // Default values
+let currentBreakInterval = 30;
 let currentBlinkInterval = 20;
-let isRunning = false; // Track if scheduler is running
+let isRunning = false;
+
+// Simplified tray icon resolution
+function resolveTrayIconPath() {
+  if (!app.isPackaged) {
+    // Development: iconTemplate.png is in electron folder
+    const devIcon = path.join(__dirname, "iconTemplate.png");
+    if (fs.existsSync(devIcon)) {
+      return devIcon;
+    }
+  } else {
+    // Production: check resources
+    const prodPaths = [
+      path.join(process.resourcesPath, "iconTemplate.png"),
+      path.join(process.resourcesPath, "assets", "iconTemplate.png"),
+    ];
+    
+    for (const iconPath of prodPaths) {
+      if (fs.existsSync(iconPath)) {
+        return iconPath;
+      }
+    }
+  }
+  
+  console.error("❌ Tray icon not found!");
+  return null;
+}
 
 export function createTray(mainWindow) {
-  const iconPath = path.join(__dirname, "iconTemplate.png");
-  tray = new Tray(iconPath);
-  tray.setToolTip("Blinkr");
+  const iconPath = resolveTrayIconPath();
+  
+  if (!iconPath) {
+    console.error("❌ Could not resolve tray icon path. Tray will not be created.");
+    return;
+  }
+  
+  console.log("✅ Creating tray with icon:", iconPath);
+  
+  try {
+    // Use nativeImage to create the icon - this ensures proper rendering
+    const icon = nativeImage.createFromPath(iconPath);
+    
+    // For macOS, mark as template image
+    if (process.platform === "darwin") {
+      icon.setTemplateImage(true);
+    }
+    
+    tray = new Tray(icon);
+    tray.setToolTip("Blinkr");
+    
+    // Additional macOS-specific settings
+    if (process.platform === "darwin") {
+      tray.setIgnoreDoubleClickEvents(true);
+    }
+    
+    console.log("✅ Tray created successfully!");
+  } catch (error) {
+    console.error("❌ Failed to create tray:", error);
+    return;
+  }
 
   function formatTime(ms) {
     const mins = Math.floor(ms / 60000);
@@ -28,11 +83,9 @@ export function createTray(mainWindow) {
     currentBlinkInterval = blinkInterval;
     isRunning = true;
     
-    // Restart scheduler with new intervals
     stopScheduler();
     startScheduler({ breakInterval, blinkInterval });
 
-    // Notify renderer about the change
     mainWindow.webContents.send("scheduler-state-changed", {
       running: true,
       breakInterval,
@@ -41,6 +94,8 @@ export function createTray(mainWindow) {
   }
 
   function updateMenuAndTooltip() {
+    if (!tray || tray.isDestroyed()) return;
+    
     const nextBreakTime = getNextBreakTime();
     let timeLeft = "Not started";
 
@@ -53,10 +108,8 @@ export function createTray(mainWindow) {
       }
     }
 
-    // Update tooltip
     tray.setToolTip(`Next break: ${timeLeft}`);
 
-    // Rebuild menu every second so it's always fresh
     const contextMenu = Menu.buildFromTemplate([
       { label: `Next break: ${timeLeft}`, enabled: false },
       { type: "separator" },
@@ -115,8 +168,8 @@ export function createTray(mainWindow) {
       {
         label: "Quit",
         click: () => {
-          if (trayInterval) clearInterval(trayInterval);
-          tray.destroy();
+          // if (trayInterval) clearInterval(trayInterval);
+          // if (tray && !tray.isDestroyed()) tray.destroy();
           app.quit();
         },
       },
@@ -125,15 +178,24 @@ export function createTray(mainWindow) {
     tray.setContextMenu(contextMenu);
   }
 
-  // Initial update
   updateMenuAndTooltip();
-
-  // Update BOTH menu and tooltip every second
   trayInterval = setInterval(updateMenuAndTooltip, 1000);
 }
 
+// Rebuild tray when macOS displays change
+export function rebuildTray(mainWindow) {
+  console.log("🔄 Rebuilding tray due to display change...");
+  destroyTray();
+  createTray(mainWindow);
+}
+
 export function destroyTray() {
-  if (trayInterval) clearInterval(trayInterval);
-  if (tray) tray.destroy();
+  if (trayInterval) {
+    clearInterval(trayInterval);
+    trayInterval = null;
+  }
+  if (tray && !tray.isDestroyed()) {
+    tray.destroy();
+  }
   tray = null;
 }

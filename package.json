@@ -12,6 +12,8 @@
     "build": "tsc -b && vite build",
     "electron:build": "rm -rf dist dist-electron && npm run build && electron-builder",
     "electron:build:mac": "rm -rf dist dist-electron && npm run build && electron-builder --mac",
+    "electron:build:win": "rm -rf dist dist-electron && npm run build && electron-builder --win --x64",
+    "electron:build:linux": "rm -rf dist dist-electron && npm run build && electron-builder --linux",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -34,56 +36,48 @@
         "from": "src/assets",
         "to": "assets",
         "filter": ["**/*"]
+      },
+      {
+        "from": "electron/iconTemplate.png",
+        "to": "iconTemplate.png"
       }
     ],
+
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "src/assets/app-icon.png",
       "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        },
-        {
-          "target": "zip",
-          "arch": ["x64", "arm64"]
-        }
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
       ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false
     },
+
     "win": {
       "icon": "src/assets/app-icon.png",
       "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
+        { "target": "nsis", "arch": ["x64"] }
       ]
     },
+
     "linux": {
       "icon": "src/assets/app-icon.png",
       "target": ["AppImage", "deb"],
       "category": "Utility"
     },
+
     "dmg": {
       "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
       ],
-      "window": {
-        "width": 540,
-        "height": 400
-      }
+      "window": { "width": 540, "height": 400 }
     },
+
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,

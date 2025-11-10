@@ -11,7 +11,7 @@ let blinkTimer = null;
 let overlayWindows = [];
 let activeOverlayType = null;
 
-// 🔥 Helper function to get correct asset paths
+// Helper function to get correct asset paths
 function getAssetPath(relativePath) {
   if (app.isPackaged) {
     // Production: assets are in Resources/assets/
@@ -60,7 +60,7 @@ function createOverlay(file) {
     overlay.setIgnoreMouseEvents(file !== "break.html");
     overlay.setAlwaysOnTop(true, "screen-saver");
 
-    // 🔥 Build the URL with asset paths as query parameters
+    // Build the URL with asset paths as query parameters
     const overlayPath = path.join(__dirname, "..", "overlays", file);
     
     // Get all asset paths

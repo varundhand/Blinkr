@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, screen } from "electron";
+import { rebuildTray } from "./tray.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
@@ -9,7 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow;
-let isFirstLaunch = true; // Track first open
+let isFirstLaunch = true;
+let isQuitting = false; // 
 
 // ---------- ICON PATH RESOLUTION ----------
 function resolveIconPath() {
@@ -35,7 +37,7 @@ function createMainWindow() {
     width: 750,
     height: 750,
     icon: resolveIconPath(),
-    show: false, // initially hidden
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
     },
@@ -54,16 +56,13 @@ function createMainWindow() {
     }
   });
 
-  // Instead of quitting, hide the window when closed
+  // Only prevent close if NOT quitting
   mainWindow.on('close', (event) => {
-    if (process.platform === 'darwin') {
+    if (!isQuitting && process.platform === 'darwin') {
       event.preventDefault();
       mainWindow.hide();
-    } else {
-      app.quit();
     }
   });
-  
 
   return mainWindow;
 }
@@ -72,23 +71,24 @@ function createMainWindow() {
 app.whenReady().then(() => {
   const mainWindow = createMainWindow();
   const iconPath = resolveIconPath();
-
+  
   if (process.platform === "darwin" && iconPath) {
     app.dock.setIcon(iconPath);
   }
 
   createTray(mainWindow);
 
-  // Optional: hide Dock icon for macOS (true background app)
-  // Uncomment below if you want it to only live in tray
-  // if (process.platform === "darwin") app.dock.hide();
+  // Fix for macOS tray disappearing when monitors change
+  if (process.platform === "darwin") {
+    screen.on("display-added", () => rebuildTray(mainWindow));
+    screen.on("display-removed", () => rebuildTray(mainWindow));
+    screen.on("display-metrics-changed", () => rebuildTray(mainWindow));
+  }
 
-  // We need to listen for the activate event on macOS in your main.js (or background.js) and recreate the window if there’s none currently open.
+  // Activate event for macOS
   app.on('activate', () => {
-    // On macOS, recreate a window when the dock icon is clicked
-    // and there are no other windows open
     if (BrowserWindow.getAllWindows().length === 0) {
-      createMainWindow(); // replace this with your actual window creation function
+      createMainWindow();
     } else {
       const win = BrowserWindow.getAllWindows()[0];
       if (win) {
@@ -96,23 +96,19 @@ app.whenReady().then(() => {
       }
     }
   });
-  
 
   // ---- IPC: Scheduler start/stop logic ----
   ipcMain.on("start-scheduler", (event, data) => {
     stopScheduler();
     closeAllOverlays();
-
     const breakInterval = data.breakInterval || 30;
     const blinkInterval = data.blinkInterval || 20;
-
     startScheduler({ breakInterval, blinkInterval });
   });
 
   ipcMain.on("stop-scheduler", () => {
     stopScheduler();
     closeAllOverlays();
-
     mainWindow.webContents.send("scheduler-state-changed", {
       running: false,
       breakInterval: 30,
@@ -125,12 +121,18 @@ app.whenReady().then(() => {
   });
 });
 
-// ---------- CLEANUP ----------
+// Set quitting flag before cleanup
 app.on("before-quit", () => {
+  isQuitting = true;
   destroyTray();
   stopScheduler();
 });
 
-app.on("window-all-closed", (event) => {
-  event.preventDefault();
+// Remove the window-all-closed prevention
+// On macOS, apps should stay open even with no windows (tray app behavior)
+// But when isQuitting is true, we let it quit normally
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin" || isQuitting) {
+    app.quit();
+  }
 });
